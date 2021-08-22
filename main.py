@@ -12,8 +12,8 @@ import json
 def commandOptions(argv):
     opts, args = getopt.getopt(argv, "s:e:u:p:")
     options = {
-        "start": "2020-12-01 00:00:00",
-        "end": "2020-12-31 00:00:00",
+        "start": "",
+        "end": "",
         "user": "kfullerton",
         "pass": "",
        # "host": "http://192.168.11.190/zm/api/",
@@ -58,6 +58,17 @@ def getToken(options):
 def deleteEvents(options):
     # use the start and end to get events
     # loop through then events and delete them
+
+    # TODO Get the start date and end date from command line
+
+    # TODO Loop through all the events and build a list
+    events = {
+        "total": 0,
+        "archived": 0,
+        "deleted": 0,
+        "list": []
+    }
+
     url = options['host'] + 'events.json?page=1&token=' + options['token']
 
     r = requests.get(url)
@@ -65,22 +76,42 @@ def deleteEvents(options):
         data = r.json()
         pg_count = data['pagination']['pageCount']
         for i in range(0, pg_count):
+            print('Getting Page ' + str(i))
             url = options['host'] + 'events.json?token=' + options['token'] + '&page=' + str(i)
             r = requests.get(url)
             if r.status_code == 200:
                 d2 = r.json()
                 for x in d2['events']:
-                    evt = x['Event']
+                    evt = x['Event']                    
+                    if(evt["Archived"] !="0"): #evt["Locked"] != false or 
+                        events["archived"] +=1
+                    else:
+                        events['total'] +=1
+                        events['list'].append(evt["Id"])
+
                     #print(evt["Id"] + '  -  ' + evt['StartTime'] + '  -  ' + evt['EndTime'])
                     # DELETE http: // server / zm / api / events / 1.json
-                    durl = options['host'] + 'events/' + evt['Id'] + '.json?token=' + options['token']
-                    r3 = requests.delete(durl)
-                    if r3.status_code == 200:
-                        # print("Deleted  -  " + str(evt["Id"]) + '  -  ' + evt['StartTime'] + '  -  ' + evt['EndTime'])
-                        print("Deleted  -  " + str(evt["Id"]) + '  -  ' + str(evt['StartTime']) )
-                    else:
-                        d3 = r3.json()
-                        print(d3)
+                    # durl = options['host'] + 'events/' + evt['Id'] + '.json?token=' + options['token']
+                    # r3 = requests.delete(durl)
+                    # if r3.status_code == 200:
+                    #     # print("Deleted  -  " + str(evt["Id"]) + '  -  ' + evt['StartTime'] + '  -  ' + evt['EndTime'])
+                    #     print("Deleted  -  " + str(evt["Id"]) + '  -  ' + str(evt['StartTime']) )
+                    # else:
+                    #     d3 = r3.json()
+                    #     print(d3)
+        print('-----------------------------------')
+        print('-- Total Events:  ' + str(events["total"]))
+        print('-- Archived:  ' + str(events["archived"]))
+        print('-----------------------------------')
+    x = 1
+    for j in events['list']:
+        x += 1
+        durl = options['host'] + 'events/' + j + '.json?token=' + options['token']
+        r3 = requests.delete(durl)
+        if r3.status_code == 200:
+            foo = str(x) + ' of ' + str(events["total"])
+            print(foo + " Deleted  -  " + str(evt["Id"]) + '  -  ' + str(evt['StartTime']) )
+
 
 
 # try
@@ -92,12 +123,12 @@ def deleteEvents(options):
 
 
 def main(argv):
-    print ('this is main')
     options = commandOptions(argv)
     if options['user'] != "" and options['pass'] != "":
         options['token'] = getToken(options)
         # print(token)
         if options['token'] != "":
+            print('Logged In !')
             deleteEvents(options)
         else:
             print(' Did not log in')
