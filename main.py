@@ -17,8 +17,8 @@ def commandOptions(argv):
         "user": "kfullerton",
         "pass": "",
        # "host": "http://192.168.11.190/zm/api/",
-       # "host": "http://krobx.dyndns.org:9002/zm/api/",
-        "host": "http://krherndon.dyndns.org:9001/zm/api/",
+        "host": "http://krobx.dyndns.org:9002/zm/api/",
+       # "host": "http://krherndon.dyndns.org:9001/zm/api/",
         "token": ""
     }
     if len(opts) < 4:
@@ -42,14 +42,12 @@ def commandOptions(argv):
 # "http://server/zm/api/events/index/StartTime%20>=:2015-05-15%2018:43:56/EndTime%20<=:208:43:56.json"
 def getToken(options):
     # set the host url and send in the details.
-    # / host / login.json?user = kfullerton & pass=
     url = options['host'] + 'host/login.json?user=' + options['user'] + '&pass=' + options['pass']
-    print(url)
+    print("Attaching to " + options['host'])
     result = ""
     r = requests.get(url)
     if r.status_code == 200:
         data = r.json()
-        print(data)
         result = data['access_token']
     else:
         print (r)
@@ -59,9 +57,8 @@ def deleteEvents(options):
     # use the start and end to get events
     # loop through then events and delete them
 
-    # TODO Get the start date and end date from command line
+    # TODO: Get the start date and end date from command line
 
-    # TODO Loop through all the events and build a list
     events = {
         "total": 0,
         "archived": 0,
@@ -76,7 +73,9 @@ def deleteEvents(options):
         data = r.json()
         pg_count = data['pagination']['pageCount']
         for i in range(0, pg_count):
-            print('Getting Page ' + str(i))
+            print("Getting Page " + str(i), end = '\r' )
+            if i % 5 == 0 and i != 0:
+                print("")
             url = options['host'] + 'events.json?token=' + options['token'] + '&page=' + str(i)
             r = requests.get(url)
             if r.status_code == 200:
@@ -87,18 +86,7 @@ def deleteEvents(options):
                         events["archived"] +=1
                     else:
                         events['total'] +=1
-                        events['list'].append(evt["Id"])
-
-                    #print(evt["Id"] + '  -  ' + evt['StartTime'] + '  -  ' + evt['EndTime'])
-                    # DELETE http: // server / zm / api / events / 1.json
-                    # durl = options['host'] + 'events/' + evt['Id'] + '.json?token=' + options['token']
-                    # r3 = requests.delete(durl)
-                    # if r3.status_code == 200:
-                    #     # print("Deleted  -  " + str(evt["Id"]) + '  -  ' + evt['StartTime'] + '  -  ' + evt['EndTime'])
-                    #     print("Deleted  -  " + str(evt["Id"]) + '  -  ' + str(evt['StartTime']) )
-                    # else:
-                    #     d3 = r3.json()
-                    #     print(d3)
+                        events['list'].append(evt)
         print('-----------------------------------')
         print('-- Total Events:  ' + str(events["total"]))
         print('-- Archived:  ' + str(events["archived"]))
@@ -106,11 +94,13 @@ def deleteEvents(options):
     x = 1
     for j in events['list']:
         x += 1
-        durl = options['host'] + 'events/' + j + '.json?token=' + options['token']
+        durl = options['host'] + 'events/' + str(j["Id"]) + '.json?token=' + options['token']
         r3 = requests.delete(durl)
         if r3.status_code == 200:
             foo = str(x) + ' of ' + str(events["total"])
-            print(foo + " Deleted  -  " + str(evt["Id"]) + '  -  ' + str(evt['StartTime']) )
+            print(foo + " Deleted  -  " + str(j["Id"]) + '  -  ' + str(j['StartTime']), end='\r' )
+            if x % 10 == 0:
+                print("")
 
 
 
@@ -136,5 +126,3 @@ def main(argv):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     main(sys.argv[1:])
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
