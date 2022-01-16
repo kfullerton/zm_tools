@@ -17,8 +17,8 @@ def commandOptions(argv):
         "user": "kfullerton",
         "pass": "",
        # "host": "http://192.168.11.190/zm/api/",
-       # "host": "http://krobx.dyndns.org:9002/zm/api/",
-        "host": "http://krherndon.dyndns.org:9001/zm/api/",
+        "host": "http://krobx.dyndns.org:9002/zm/api/",
+       # "host": "http://krherndon.dyndns.org:9001/zm/api/",
         "token": ""
     }
     if len(opts) < 4:
