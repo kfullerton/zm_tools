@@ -17,7 +17,8 @@ def commandOptions(argv):
         "user": "kfullerton",
         "pass": "",
        # "host": "http://192.168.11.190/zm/api/",
-        "host": "http://krobx.dyndns.org:9002/zm/api/",
+       # "host": "http://krobx.dyndns.org:9002/zm/api/",
+        "host": "http://192.168.1.110/zm/api/",
        # "host": "http://krherndon.dyndns.org:9001/zm/api/",
         "token": ""
     }
@@ -102,7 +103,7 @@ def deleteEvents(options):
             if x % 10 == 0:
                 print("")
 
-
+    print('')
 
 # try
 # except Exception as e:
